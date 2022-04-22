@@ -15,14 +15,29 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
+        python-version: ['3.9']
+        rust-version: ['1.42.0']  # Note: unused since controlled by `rust/rust-toolchain`
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Perform benchmark
+      - name: "Set up Python"
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: "Set up Rust"
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
+      - name: Test run
         run: |
-          make perform_benchmark
+          gfortran -v
+          gcc -v
+          python -v
+          rustc --version
 
 
 
