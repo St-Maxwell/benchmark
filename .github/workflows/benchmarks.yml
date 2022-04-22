@@ -1,0 +1,32 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+      - master
+    tags: '*'
+
+jobs:
+  test:
+    runs-on: ${{matrix.os}}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Perform benchmark
+        run: |
+          make perform_benchmark
+
+
+
+
+
+
+
