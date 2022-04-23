@@ -22,26 +22,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: "Set up Python"
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: "Set up Rust"
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust-version }}
+      - name: Set up matplotlib
+        run: pip install matplotlib
 
-      - name: Test run
+#      - name: "Set up Rust"
+#        uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: ${{ matrix.rust-version }}
+
+      - name: Run benchmarks
         run: |
-          gfortran -v
-          gcc -v
-          python -v
-          rustc --version
-
-
-
-
-
-
-
+          chmod +x run.sh
+          ./run.sh
+      
+      - name: deploy gh-page
+      - use: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: page
