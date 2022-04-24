@@ -33,11 +33,11 @@ encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 html_template = '''<html>
 <head>
 <style type="text/css">
-.mainbody {
+.mainbody {{
     max-width: 1000px;
     margin-right: auto;
     margin-left: auto;
-}
+}}
 </style>
 </head>
 <body>
