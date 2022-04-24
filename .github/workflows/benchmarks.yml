@@ -31,6 +31,11 @@ jobs:
         run: |
           pip install matplotlib
 
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust-version }}
+
       - name: Run benchmarks
         run: |
           chmod +x run.sh

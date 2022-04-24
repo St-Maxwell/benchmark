@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 import sys
 
-languages = ["fortran","cpp"]
+languages = ["fortran","cpp","rust"]
 test_cases = ["poisson2d"]
 
 benchmark_results = {}
