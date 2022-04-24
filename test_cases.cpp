@@ -98,7 +98,7 @@ void poisson2d(int &iteration)
 
 int main()
 {
-    constexpr int NRUNS = 1;
+    constexpr int NRUNS = 20;
     double tmin = std::numeric_limits<double>::max();
     int iter;
 

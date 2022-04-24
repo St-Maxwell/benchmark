@@ -78,7 +78,7 @@ program main
     use definition
     use tests
     implicit none
-    integer, parameter :: NRUNS = 1
+    integer, parameter :: NRUNS = 20
     real(dp) :: t1, t2, tmin
     integer :: i, j
     integer :: iter

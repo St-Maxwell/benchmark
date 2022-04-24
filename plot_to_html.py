@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+import sys
 
 languages = ["fortran","cpp"]
 test_cases = ["poisson2d"]
@@ -29,17 +30,35 @@ tmpfile = BytesIO()
 fig.savefig(tmpfile, format='png')
 encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
 
-html_pre = '''
-<html>
+html_template = '''<html>
+<head>
+<style type="text/css">
+.mainbody {
+    max-width: 1000px;
+    margin-right: auto;
+    margin-left: auto;
+}
+</style>
+</head>
 <body>
-<h2>Benchmark results</h2>
-'''
-html_post = '''
+<div class="mainbody">
+<h1>Benchmark results</h1>
+{img}
+<ul>
+<li>Commit: {sha}</li>
+<li>OS: {OS}</li>
+<li>CPU: {CPU}</li>
+</ul>
+<p>Repository: <a href="https://gensoukyo.me/benchmark/">https://gensoukyo.me/benchmark/</a></p>
+</div>
 </body>
-</html>
-'''
+</html>'''
 
-html = html_pre + '<img src=\'data:image/png;base64,{}\'>'.format(encoded) + html_post
+sha = sys.argv[1]
+OS = sys.argv[2]
+CPU = sys.argv[3]
+html = html_template.format(img='<img src=\'data:image/png;base64,{}\'>'.format(encoded),
+                            sha=sha, OS=OS, CPU=CPU)
 
 with open('index.html','w') as f:
     f.write(html)
