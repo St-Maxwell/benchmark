@@ -24,6 +24,7 @@ for case, results in benchmark_results.items():
     ax.scatter(list(range(len(languages))), results,label=case)
 
 ax.set_xticks(list(range(len(languages))), labels=languages)
+ax.set_ylabel("Duration (s)")
 ax.legend()
 
 tmpfile = BytesIO()
@@ -49,7 +50,7 @@ html_template = '''<html>
 <li>OS: {OS}</li>
 <li>CPU: {CPU}</li>
 </ul>
-<p>Repository: <a href="https://gensoukyo.me/benchmark/">https://gensoukyo.me/benchmark/</a></p>
+<p>Repository: <a href="https://github.com/St-Maxwell/benchmark">https://github.com/St-Maxwell/benchmark</a></p>
 </div>
 </body>
 </html>'''

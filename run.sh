@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # compile
-gfortran test_cases.f90 -Ofast -o fortran_benchmark
-g++ test_cases.cpp -Ofast -o cpp_benchmark
-rustc test_cases.rs -C opt-level=3 -o rust_benchmark
+gfortran test_cases.f90 -Ofast -march=native -o fortran_benchmark
+g++ test_cases.cpp -Ofast -march=native -o cpp_benchmark
+rustc test_cases.rs -C opt-level=3 -C target-cpu=native -o rust_benchmark
 
 # run
 ./fortran_benchmark | tee fortran_results.txt
