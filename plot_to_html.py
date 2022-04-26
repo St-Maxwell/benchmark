@@ -26,6 +26,7 @@ for case, results in benchmark_results.items():
 ax.set_xticks(list(range(len(languages))), labels=languages)
 ax.set_ylabel("Duration (s)")
 ax.legend()
+ax.grid()
 
 tmpfile = BytesIO()
 fig.savefig(tmpfile, format='png')
