@@ -4,43 +4,16 @@
 #include <array>
 #include <chrono>
 #include <limits>
-
-template <size_t M, size_t N>
-using mat = std::array<std::array<double, N>, M>;
+#include <algorithm>
+template <size_t M>
+using mat = std::array<double, M*M>;
 
 void print_benchmark_result(const std::string &name, const double time)
 {
     std::cout << "Cpp," << name << ',' << std::setprecision(6) << time << std::endl;
 }
 
-template <size_t M, size_t N>
-void swap(mat<M, N> &a, const mat<M, N> &b)
-{
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-            a[i][j] = b[i][j];
-    }
-}
-
-template <size_t M, size_t N>
-double mmax(const mat<M, N> &a, const mat<M, N> &b)
-{
-    double max = 0.0;
-    double diff = 0.0;
-    for (int i = 0; i < M; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            diff = std::abs(a[i][j] - b[i][j]);
-            if (diff > max)
-                max = diff;
-        }
-    }
-    return max;
-}
-
-double rho(double x, double y)
+inline double rho(double x, double y) noexcept
 {
     constexpr double s1 = 0.6;
     constexpr double e1 = 0.8;
@@ -61,37 +34,48 @@ double rho(double x, double y)
     }
 }
 
+/*    similar with std::transform_n       */
+template<int N,class Op, class Out, class In_1, class...In_N>
+inline auto transform_N(
+    Op op,
+    Out out,
+    In_1 in_1,
+    In_N...in_n) noexcept
+{
+   for(int i=0;i<N;i++)
+      *out++ = op(*in_1++, *in_n++...);
+    return out;
+}
 void poisson2d(int &iteration)
 {
     constexpr int M = 100;
     constexpr double epsilon0 = 8.85e-12;
     constexpr double target = 1.0e-6;
+    constexpr double target1= -target;
     constexpr double a = 0.01;
-
-    mat<M, M> phi{};
-    mat<M, M> phiprime{};
-    mat<M, M> rhoarr;
+    constexpr double a2 = a * a/epsilon0;
+    constexpr double a3=0.25;
+    mat<M> phi{};
+    mat<M> phiprime{};
+    mat<M> rhoarr {};
 
     for (int i = 0; i < M; ++i)
     {
         for (int j = 0; j < M; ++j)
-            rhoarr[i][j] = rho(i * a, j * a);
+            rhoarr[i*M+j] = rho(i * a, j * a);
     }
     double delta = 1.0;
     int iter = 0;
-    double a2 = a * a;
-    while (delta > target)
+    for(bool b=true;b;)
     {
         iter += 1;
         for (int i = 1; i < M - 1; ++i)
-        {
-            for (int j = 1; j < M - 1; ++j)
-            {
-                phiprime[i][j] = (phi[i + 1][j] + phi[i - 1][j] + phi[i][j + 1] + phi[i][j - 1] + a2 * rhoarr[i][j] / epsilon0) / 4.0;
-            }
-        }
-        delta = mmax(phi, phiprime);
-        swap(phi, phiprime);
+            transform_N<M-2>([](auto u,auto l,auto m,auto r,auto x){
+                return a3*(u+l+a2*m+r+x);
+            }, phiprime.data()+i*M, phi.data()+(i-1)*M, phi.data()+i*M-1,rhoarr.data()+i*M,phi.data()+i*M+1,phi.data()+(i+1)*M);
+            
+        b=std::mismatch(phi.begin(), phi.end(), phiprime.begin(), [](auto l,auto r){auto t=r-l;return target1<t&&t<target;}).first!=phi.end();
+        std::copy_n(phiprime.begin(), M*M, phi.begin());
     }
     iteration = iter;
 }
@@ -117,3 +101,4 @@ int main()
 
     return 0;
 }
+
