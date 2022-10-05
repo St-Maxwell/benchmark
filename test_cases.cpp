@@ -33,8 +33,10 @@ inline double rho(double x, double y) noexcept
         return 0.0;
     }
 }
+
+/*    similar with std::transform_n       */
 template<int N,class Op, class Out, class In_1, class...In_N>
-inline auto yyk_transform(
+inline auto transform_N(
     Op op,
     Out out,
     In_1 in_1,
@@ -68,7 +70,7 @@ void poisson2d(int &iteration)
     {
         iter += 1;
         for (int i = 1; i < M - 1; ++i)
-            yyk_transform<M-2>([](auto u,auto l,auto m,auto r,auto x){
+            transform_N<M-2>([](auto u,auto l,auto m,auto r,auto x){
                 return a3*(u+l+a2*m+r+x);
             }, phiprime.data()+i*M, phi.data()+(i-1)*M, phi.data()+i*M-1,rhoarr.data()+i*M,phi.data()+i*M+1,phi.data()+(i+1)*M);
             
