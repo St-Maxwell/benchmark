@@ -32,45 +32,37 @@ contains
         integer, intent(out) :: iteration
         integer, parameter :: M = 100
         real(dp), parameter :: epsilon0 = 8.85e-12_dp, target = 1.e-6_dp, a = 0.01_dp
-        real(dp), parameter :: a2=a*a
         real(dp) :: phi(M, M), phiprime(M, M), rhoarr(M, M)
+        real(dp) :: a2
         integer :: i, j, iter
 
         phi(:, :) = 0._dp
+        phiprime(:, :) = 0._dp
         do j = 1, M
             do i = 1, M
                 rhoarr(i, j) = rho((i-1)*a, (j-1)*a)
             end do
         end do
         iter = 0
+        a2 = a*a
         do
             iter = iter + 1
-            call rotate(phiprime,phi)
+            do j = 2, M - 1
+                do i = 2, M - 1
+                    phiprime(i, j) = (phi(i + 1, j) + phi(i - 1, j) + phi(i, j + 1) + phi(i, j - 1) &
+                                      + a2*rhoarr(i, j)/epsilon0)/4.0_dp
+                end do
+            end do
             if(ismin())exit
-            iter = iter + 1
-            call rotate(phi,phiprime)
-            if(ismin())exit
+            phi = phiprime
         end do
         iteration = iter
     contains
-
-       subroutine rotate(a,b)
-          real(dp),intent(inout)::a(:,:)
-          real(dp),intent(in)::b(:,:)
-          integer::i,j
-          do j = 2, M - 1
-             do i = 2, M - 1
-                a(i,j) =(b(i+1,j)+b(i-1,j)+b(i,j+1)+b(i,j-1) &
-                   + a2*rhoarr(i, j)/epsilon0)/4.0_dp
-             end do
-          end do
-       end subroutine rotate
-
        pure logical function ismin()result(res)
           integer::i,j
           do j=2,m-1
              do i=2,m-1
-                  associate(x=>phi(i,j)-phiprime(i,j))
+                  associate(x=>phiprime(i,j)-phi(i,j))
                      res= x > -target .and. x <target
                      if(.not.res)return
                   end associate
