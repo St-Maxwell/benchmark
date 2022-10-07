@@ -72,7 +72,7 @@ void poisson2d(int &iteration)
         for (int i = 1; i < M - 1; ++i)
             transform_N<M-2>([](auto u,auto l,auto m,auto r,auto x){
                 return a3*(u+l+a2*m+r+x);
-            }, phiprime.data()+i*M, phi.data()+(i-1)*M, phi.data()+i*M-1,rhoarr.data()+i*M,phi.data()+i*M+1,phi.data()+(i+1)*M);
+            }, phiprime.data()+i*M+1, phi.data()+(i+1)*M+1, phi.data()+(i-1)*M+1,rhoarr.data()+i*M+1,phi.data()+i*M+2,phi.data()+i*M);
             
         b=std::mismatch(phi.begin(), phi.end(), phiprime.begin(), [](auto l,auto r){auto t=r-l;return target1<t&&t<target;}).first!=phi.end();
         std::copy_n(phiprime.begin(), M*M, phi.begin());
