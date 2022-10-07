@@ -33,20 +33,19 @@ contains
         integer, parameter :: M = 100
         real(dp), parameter :: epsilon0 = 8.85e-12_dp, target = 1.e-6_dp, a = 0.01_dp
         real(dp) :: phi(M, M), phiprime(M, M), rhoarr(M, M)
-        real(dp) :: a2, delta
+        real(dp) :: a2
         integer :: i, j, iter
 
         phi(:, :) = 0._dp
         phiprime(:, :) = 0._dp
         do j = 1, M
             do i = 1, M
-                rhoarr(i, j) = rho(i*a, j*a)
+                rhoarr(i, j) = rho((i-1)*a, (j-1)*a)
             end do
         end do
-        delta = 1._dp
         iter = 0
         a2 = a*a
-        do while (delta > target)
+        do
             iter = iter + 1
             do j = 2, M - 1
                 do i = 2, M - 1
@@ -54,11 +53,23 @@ contains
                                       + a2*rhoarr(i, j)/epsilon0)/4.0_dp
                 end do
             end do
-            delta = maxval(abs(phiprime - phi))
+            if(ismin())exit
             phi = phiprime
         end do
         iteration = iter
     contains
+       pure logical function ismin()result(res)
+          integer::i,j
+          do j=2,m-1
+             do i=2,m-1
+                  associate(x=>phiprime(i,j)-phi(i,j))
+                     res= x > -target .and. x <target
+                     if(.not.res)return
+                  end associate
+             end do
+          end do
+       end function ismin
+
         pure function rho(x, y)
             real(dp), intent(in) :: x, y
             real(dp) :: rho

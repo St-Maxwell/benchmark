@@ -22,17 +22,18 @@ fn swap<const M: usize, const N: usize>(a: &mut [[f64; N]; M], b: &[[f64; N]; M]
     }
 }
 
-fn mmax<const M: usize, const N: usize>(a: &[[f64; N]; M], b: &[[f64; N]; M]) -> f64 {
-    let mut max = 0.0;
-    for i in 0..M {
-        for j in 0..N {
-            let diff = (a[i][j] - b[i][j]).abs();
-            if diff > max {
-                max = diff;
+fn ismin<const M: usize, const N: usize>(a: &[[f64; N]; M], b: &[[f64; N]; M],c : f64) -> bool {
+    for i in 1..M-1 {
+        for j in 1..N-1 {
+            let diff = a[i][j] - b[i][j];
+            let max = (diff > -c) && (diff < c);
+            if !max {
+                return max;
             }
         }
     }
-    max
+    true
+
 }
 
 fn poisson2d(iteration: &mut i32) {
@@ -50,10 +51,9 @@ fn poisson2d(iteration: &mut i32) {
             rhoarr[i][j] = rho(a * i as f64, a * j as f64);
         }
     }
-    let mut delta: f64 = 1.0;
     let mut iter = 0;
     let a2 = a * a;
-    while delta > target {
+    loop{
         iter += 1;
         for i in 1..M - 1 {
             for j in 1..M - 1 {
@@ -65,7 +65,9 @@ fn poisson2d(iteration: &mut i32) {
                     / 4.0
             }
         }
-        delta = mmax(&phi, &phiprime);
+        if ismin(&phi,&phiprime,target){
+            break;
+        }
         swap(&mut phi, &phiprime);
     }
     *iteration = iter;
