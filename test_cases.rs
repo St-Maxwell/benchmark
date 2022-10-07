@@ -1,9 +1,11 @@
+use std::mem::swap;
 use std::time::Instant;
 
 fn print_benchmark_result(name: &String, time: f64) {
     println!("rust,{},{:.6}", name, time);
 }
 
+#[inline(always)]
 fn rho(x: f64, y: f64) -> f64 {
     if x > 0.6 && x < 0.8 && y > 0.6 && y < 0.8 {
         1.0
@@ -14,61 +16,45 @@ fn rho(x: f64, y: f64) -> f64 {
     }
 }
 
-fn swap<const M: usize, const N: usize>(a: &mut [[f64; N]; M], b: &[[f64; N]; M]) {
-    for i in 0..M {
-        for j in 0..N {
-            a[i][j] = b[i][j];
-        }
-    }
-}
-
-fn ismin<const M: usize, const N: usize>(a: &[[f64; N]; M], b: &[[f64; N]; M],c : f64) -> bool {
-    for i in 1..M-1 {
-        for j in 1..N-1 {
-            let diff = a[i][j] - b[i][j];
-            let max = (diff > -c) && (diff < c);
-            if !max {
-                return max;
-            }
-        }
-    }
-    true
-
-}
-
 fn poisson2d(iteration: &mut i32) {
     const M: usize = 100;
-    let epsilon0 = 8.85e-12;
-    let target = 1.0e-6;
+    let eps = 8.85e-12;
+    let target = (-1.0e-6, 1.0e-6);
     let a = 0.01;
 
-    let mut phi = [[0.0; M]; M];
-    let mut phiprime = [[0.0; M]; M];
-    let mut rhoarr = [[0.0; M]; M];
+    let mut phi = &mut [[0.0; M]; M];
+    let mut phiprime = &mut [[0.0; M]; M];
+    let rhoarr = &mut [[0.0; M]; M];
 
     for i in 0..M {
         for j in 0..M {
             rhoarr[i][j] = rho(a * i as f64, a * j as f64);
         }
     }
+
     let mut iter = 0;
-    let a2 = a * a;
-    loop{
+    'iter: loop {
         iter += 1;
         for i in 1..M - 1 {
             for j in 1..M - 1 {
-                phiprime[i][j] = (phi[i + 1][j]
-                    + phi[i - 1][j]
-                    + phi[i][j + 1]
-                    + phi[i][j - 1]
-                    + a2 * rhoarr[i][j] / epsilon0)
-                    / 4.0
+                let u = phi[i - 1][j];
+                let d = phi[i + 1][j];
+                let l = phi[i][j - 1];
+                let r = phi[i][j + 1];
+                let o = rhoarr[i][j];
+                phiprime[i][j] = ((u + d + l + r) + (a * a / eps) * o) * 0.25;
             }
         }
-        if ismin(&phi,&phiprime,target){
-            break;
+        for i in 0..M {
+            for j in 0..M {
+                let t = phiprime[i][j] - phi[i][j];
+                if !(target.0 < t && t < target.1) {
+                    swap(&mut phi, &mut phiprime);
+                    continue 'iter;
+                }
+            }
         }
-        swap(&mut phi, &phiprime);
+        break;
     }
     *iteration = iter;
 }
