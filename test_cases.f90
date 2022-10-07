@@ -39,7 +39,7 @@ contains
         phi(:, :) = 0._dp
         do j = 1, M
             do i = 1, M
-                rhoarr(i, j) = rho(i*a, j*a)
+                rhoarr(i, j) = rho((i-1)*a, (j-1)*a)
             end do
         end do
         iter = 0
