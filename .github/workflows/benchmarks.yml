@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.9']
-        rust-version: ['1.42.0']  # Note: unused since controlled by `rust/rust-toolchain`
+        rust-version: ['1.64.0']
 
     steps:
       - name: Checkout code
