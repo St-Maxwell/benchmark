@@ -1,12 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <array>
 #include <chrono>
 #include <limits>
 #include <algorithm>
-template <size_t M>
-using mat = std::array<double, M*M>;
 
 void print_benchmark_result(const std::string &name, const double time)
 {
@@ -50,32 +47,27 @@ void poisson2d(int &iteration)
 {
     constexpr int M = 100;
     constexpr double epsilon0 = 8.85e-12;
-    constexpr double target = 1.0e-6;
-    constexpr double target1= -target;
+    constexpr double target = 1.0e-12;
     constexpr double a = 0.01;
-    constexpr double a2 = a * a/epsilon0;
+    constexpr double a2 = a*a/epsilon0;
     constexpr double a3=0.25;
-    mat<M> phi{};
-    mat<M> phiprime{};
-    mat<M> rhoarr {};
-
+    double phi[M*M]={};
+    double phiprime[M*M]={};
+    double rhoarr[M*M]={};
     for (int i = 0; i < M; ++i)
     {
         for (int j = 0; j < M; ++j)
             rhoarr[i*M+j] = rho(i * a, j * a);
     }
-    double delta = 1.0;
     int iter = 0;
-    for(bool b=true;b;)
+    for(bool b=true;b;std::copy_n(phiprime, M*M, phi))
     {
         iter += 1;
         for (int i = 1; i < M - 1; ++i)
-            transform_N<M-2>([](auto u,auto l,auto m,auto r,auto x){
-                return a3*(u+l+a2*m+r+x);
-            }, phiprime.data()+i*M+1, phi.data()+(i+1)*M+1, phi.data()+(i-1)*M+1,rhoarr.data()+i*M+1,phi.data()+i*M+2,phi.data()+i*M);
-            
-        b=std::mismatch(phi.begin(), phi.end(), phiprime.begin(), [](auto l,auto r){auto t=r-l;return target1<t&&t<target;}).first!=phi.end();
-        std::copy_n(phiprime.begin(), M*M, phi.begin());
+            transform_N<M-2>([](auto u,auto l,auto r,auto x,auto m){
+                return a3*(u+l+r+x+a2*m);
+            }, phiprime+i*M+1, phi+(i+1)*M+1, phi+(i-1)*M+1,phi+i*M+2,phi+i*M,rhoarr+i*M+1);
+        b=std::mismatch(phi, phi+M*M, phiprime, [](auto l,auto r){return (r-l)*(r-l)<target;}).first!=(phi+M*M);
     }
     iteration = iter;
 }
