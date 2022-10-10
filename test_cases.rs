@@ -1,4 +1,3 @@
-use std::mem::swap;
 use std::time::Instant;
 
 fn print_benchmark_result(name: &String, time: f64) {
@@ -22,8 +21,8 @@ fn poisson2d(iteration: &mut i32) {
     let target = (-1.0e-6, 1.0e-6);
     let a = 0.01;
 
-    let mut phi = &mut [[0.0; M]; M];
-    let mut phiprime = &mut [[0.0; M]; M];
+    let phi = &mut [[0.0; M]; M];
+    let phiprime = &mut [[0.0; M]; M];
     let rhoarr = &mut [[0.0; M]; M];
 
     for i in 0..M {
@@ -49,7 +48,11 @@ fn poisson2d(iteration: &mut i32) {
             for j in 0..M {
                 let t = phiprime[i][j] - phi[i][j];
                 if !(target.0 < t && t < target.1) {
-                    swap(&mut phi, &mut phiprime);
+                    for k1 in 0..M{
+                        for k2 in 0..M{
+                            phi[k1][k2]=phiprime[k1][k2];
+                        }
+                    }
                     continue 'iter;
                 }
             }
