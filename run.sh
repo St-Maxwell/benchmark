@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # compile
-gfortran test_cases.f90 -Ofast -march=native -o fortran_benchmark
-g++ test_cases.cpp -Ofast -march=native -o cpp_gcc_benchmark
-clang++ test_cases.cpp -Ofast -march=native -o cpp_clang_benchmark
-rustc test_cases.rs -C opt-level=3 -C target-cpu=native -C panic=abort -o rust_benchmark
+gfortran test_cases.f90 -Ofast -march=native -flto -o fortran_benchmark
+g++ test_cases.cpp -Ofast -march=native -flto -o cpp_gcc_benchmark
+clang++ test_cases.cpp -Ofast -march=native -flto -o cpp_clang_benchmark
+rustc test_cases.rs -C opt-level=3 -C target-cpu=native -C panic=abort -C lto=fat -o rust_benchmark
 
 # run
 ./fortran_benchmark | tee fortran_results.txt
