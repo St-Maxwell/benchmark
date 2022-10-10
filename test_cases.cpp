@@ -34,18 +34,6 @@ inline double rho(double x, double y) noexcept
     }
 }
 
-/*    similar with std::transform_n       */
-template<int N,class Op, class Out, class In_1, class...In_N>
-inline auto transform_N(
-    Op op,
-    Out out,
-    In_1 in_1,
-    In_N...in_n) noexcept
-{
-   for(int i=0;i<N;i++)
-      *out++ = op(*in_1++, *in_n++...);
-    return out;
-}
 void poisson2d(int &iteration)
 {
     constexpr int M = 100;
@@ -69,11 +57,16 @@ void poisson2d(int &iteration)
     for(bool b=true;b;)
     {
         iter += 1;
-        for (int i = 1; i < M - 1; ++i)
-            transform_N<M-2>([](auto u,auto l,auto m,auto r,auto x){
-                return a3*(u+l+a2*m+r+x);
-            }, phiprime.data()+i*M+1, phi.data()+(i+1)*M+1, phi.data()+(i-1)*M+1,rhoarr.data()+i*M+1,phi.data()+i*M+2,phi.data()+i*M);
-            
+        for (int i = 1; i < M - 1; ++i) {
+            for (int j = 1; j < M - 1; ++j) {
+                auto u = phi[(i - 1) * M + j];
+                auto d = phi[(i + 1) * M + j];
+                auto l = phi[i * M + j - 1];
+                auto r = phi[i * M + j + 1];
+                auto o = rhoarr[i * M + j];
+                phiprime[i * M + j] = ((a * a / epsilon0) * o + (u + d + l + r)) * 0.25;
+            }
+        }
         b=std::mismatch(phi.begin(), phi.end(), phiprime.begin(), [](auto l,auto r){auto t=r-l;return target1<t&&t<target;}).first!=phi.end();
         std::copy_n(phiprime.begin(), M*M, phi.begin());
     }
