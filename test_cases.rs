@@ -21,9 +21,9 @@ fn poisson2d(iteration: &mut i32) {
     let target = (-1.0e-6, 1.0e-6);
     let a = 0.01;
 
-    let phi = &mut [[0.0; M]; M];
-    let phiprime = &mut [[0.0; M]; M];
-    let rhoarr = &mut [[0.0; M]; M];
+    let mut phi = [[0.0; M]; M];
+    let mut phiprime = [[0.0; M]; M];
+    let mut rhoarr = [[0.0; M]; M];
 
     for i in 0..M {
         for j in 0..M {
@@ -41,18 +41,16 @@ fn poisson2d(iteration: &mut i32) {
                 let l = phi[i][j - 1];
                 let r = phi[i][j + 1];
                 let o = rhoarr[i][j];
-                phiprime[i][j] = ((u + d + l + r) + (a * a / eps) * o) * 0.25;
+                // using fused multiply-add
+                // allow optimizations equivalent to cpp
+                phiprime[i][j] = f64::mul_add(a * a / eps, o, u + d + l + r) * 0.25;
             }
         }
         for i in 0..M {
             for j in 0..M {
                 let t = phiprime[i][j] - phi[i][j];
                 if !(target.0 < t && t < target.1) {
-                    for k1 in 0..M{
-                        for k2 in 0..M{
-                            phi[k1][k2]=phiprime[k1][k2];
-                        }
-                    }
+                    phi = phiprime; // copy all elements
                     continue 'iter;
                 }
             }
